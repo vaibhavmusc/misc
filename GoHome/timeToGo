@@ -1,0 +1,27 @@
+#!/bin/bash
+if [[ $1 == "" ]]; then
+	echo; echo; echo -n "When are you planning to leave today? (HH:MM) Eg:17:30 : "; read ttg; 
+else
+	ttg=$1;
+fi
+dt=$(date +%b" "%d" "%Y)
+newdt=$(date -j -f "%b %d %Y %T" "$dt $ttg:00" "+%s"); 
+curdt=$(date +%s); secdiff=$(($newdt-$curdt)); 
+if [[ $secdiff -lt 0 ]]; then
+    echo "Time is already over, why still here?"
+    exit 0;
+fi
+
+while [ $secdiff -gt 0 ]; do
+    if [[ $secdiff -lt 3600 ]]; then color="\x1b[32m";  
+    	echo -ne "\x1b[1mTime Remaining: $color$(($secdiff%3600/60))min $(($secdiff%60))sec\x1b[0m\033[0K\r";
+    else 
+	color="\x1b[31m"; 
+    	echo -ne "\x1b[1mTime Remaining: $color$(($secdiff/3600))hr $(($secdiff%3600/60))min $(($secdiff%60))sec\x1b[0m\033[0K\r";
+    fi
+    sleep 1;
+    curdt=$(date +%s); secdiff=$(($newdt-$curdt));
+done
+echo -ne "      \x1b[32m\x1b[3m TIME TO GO!!!\x1b[0m              "
+echo
+osascript -e 'tell app "System Events" to display dialog "Its '${ttg}', Time to Go!!" buttons {"Yay"}'
